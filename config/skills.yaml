@@ -1,0 +1,258 @@
+# =============================================================================
+# ProbeLabs Assistant - Unified Skills
+# =============================================================================
+#
+# Each skill is a self-contained capability with:
+#   - id: unique identifier (used for classification)
+#   - description: when this skill should activate (used by classifier)
+#   - requires: other skills to auto-activate (dependencies)
+#   - knowledge: context to inject when active
+#   - tools: object mapping tool names to configurations (supports multiple)
+#     Each key is the tool name, value is the config:
+#       { command, args, env, allowedMethods } - external MCP process
+#       { workflow, inputs } - workflow as tool
+#       { tool: 'name' } - built-in tool
+#
+# Loaded via: expression: "loadConfig('config/skills.yaml')"
+#
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Capabilities - tells users what the assistant can do
+# -----------------------------------------------------------------------------
+- id: capabilities
+  description: user asks what this assistant can do or about its capabilities
+  knowledge: |
+    {% readfile "docs/capabilities.md" %}
+
+# -----------------------------------------------------------------------------
+# Thread Summary - summarize conversation threads
+# -----------------------------------------------------------------------------
+- id: thread-summary
+  description: user asks to summarize the current thread or conversation
+  knowledge: |
+    ## Thread Summary
+    Summarize the key points of the conversation thread:
+    - Main topics discussed
+    - Decisions made
+    - Action items identified
+    - Open questions remaining
+    Keep it concise but capture all important details.
+
+# -----------------------------------------------------------------------------
+# GitHub - browse PRs, issues, releases across ProbeLabs repos
+# -----------------------------------------------------------------------------
+- id: github
+  description: request references GitHub PRs, issues, releases, branches, or needs to browse repository metadata for any ProbeLabs project
+  knowledge: |
+    {% readfile "docs/github-tools.md" %}
+
+# -----------------------------------------------------------------------------
+# GitHub Actions - CI/CD debugging
+# -----------------------------------------------------------------------------
+- id: github-actions
+  description: request involves debugging GitHub Actions workflows, CI/CD pipelines, or build failures
+  knowledge: |
+    {% readfile "docs/github-actions-debugging.md" %}
+
+# -----------------------------------------------------------------------------
+# Code Exploration - explore the ProbeLabs codebase
+# -----------------------------------------------------------------------------
+- id: code-explorer
+  description: request needs codebase exploration, implementation details, or code search across any ProbeLabs project
+  intent: code_help
+  knowledge: |
+    {% readfile "docs/code-exploration-tool.md" %}
+  tools:
+    code-explorer:
+      workflow: code-talk
+      inputs:
+        architecture: |
+          {% readfile "docs/probelabs-architecture.md" %}
+        routing_prompt: |
+          CRITICAL ROUTING OVERRIDES (apply these FIRST before any other rules):
+
+          1. "Probe" search engine questions -> MUST include `probe`
+             - Questions about semantic search, code indexing, AST parsing
+             - Questions about Rust implementation, tree-sitter, ripgrep
+
+          2. "Visor" code review questions -> Disambiguate:
+             - `visor` = the open-source code review tool (GitHub Action + CLI)
+             - `visor-ee` = the enterprise workflow engine (assistant framework, Slack bots)
+             - If about "code review", "PR review", "GitHub Action" -> use `visor`
+             - If about "workflows", "Slack bot", "assistant", "skills" -> use `visor-ee`
+             - If unclear, include BOTH
+
+          3. AI/developer tools questions -> check which tool:
+             - "log analysis" -> `logoscope`
+             - "diagrams", "mermaid" -> `maid`
+             - "memory", "sessions" -> `memaris`
+             - "remote control", "telegram" -> `afk`
+             - "MCP server", "bigger brain" -> `big-brain`
+             - "docs MCP", "chat with docs" -> `docs-mcp`
+             - "accountability", "gates" -> `vow`
+
+          4. HTTP replay / GoReplay -> `goreplay`
+             - Questions about traffic capture, replay, load testing
+
+          5. Website questions -> `probelabs-com`
+             - Questions about marketing site, landing page, content
+
+          6. Quickstart / templates -> `probe-quickstart`
+             - Questions about getting started, project templates
+        docs_repo: probelabs/probe
+        docs_ref: master
+        max_projects: 8
+        exploration_prompt: |
+          You are exploring the ProbeLabs codebase. Focus on:
+          - Understanding how features are implemented across projects
+          - Following data flow between components
+          - Providing specific file paths and line numbers
+          - Explaining cross-project interactions and shared patterns
+
+          ProbeLabs builds developer tools focused on AI-assisted development:
+          - Probe: semantic code search (Rust, tree-sitter, ripgrep)
+          - Visor: code review automation (TypeScript, GitHub API)
+          - Various AI developer tools (MCP servers, CLIs)
+        projects:
+          - id: probe
+            repo: probelabs/probe
+            description: |
+              Probe - Semantic Code Search Engine (Rust):
+              - AI-friendly code search using ripgrep + tree-sitter
+              - AST-aware code extraction and context
+              - ElasticSearch-style query syntax
+              - MCP server integration
+              - Used as foundation for code-talk workflows
+
+          - id: visor
+            repo: probelabs/visor
+            description: |
+              Visor - AI Code Review Tool (TypeScript):
+              - GitHub Action for automated PR reviews
+              - CLI for local code review
+              - Security, performance, style analysis
+              - Multi-model AI support (Claude, GPT)
+              - PR comment and suggestion generation
+
+          - id: visor-ee
+            repo: probelabs/visor-ee
+            description: |
+              Visor Enterprise Edition (TypeScript):
+              - Workflow engine for AI assistants
+              - Slack bot framework
+              - Intent routing and skill classification
+              - MCP server orchestration
+              - Code-talk and engineer workflow primitives
+              - Liquid templating for dynamic prompts
+
+          - id: probelabs-com
+            repo: probelabs/probelabs.com
+            description: |
+              ProbeLabs Website:
+              - Official marketing site
+              - Product documentation and landing pages
+              - Blog and content
+
+          - id: probe-quickstart
+            repo: probelabs/probe-quickstart
+            description: |
+              Probe Quickstart Template:
+              - Template for building AI assistants with Visor
+              - Example workflows and configurations
+              - Getting started guide
+
+          - id: maid
+            repo: probelabs/maid
+            description: |
+              Maid - Mermaid Diagram Linter:
+              - Validates Mermaid diagram syntax
+              - Helps humans and AI create correct diagrams
+              - CLI tool
+
+          - id: goreplay
+            repo: probelabs/goreplay
+            description: |
+              GoReplay - HTTP Traffic Replay (Go):
+              - Capture and replay live HTTP traffic
+              - Load testing with real production data
+              - Traffic mirroring and filtering
+              - Plugin system for request modification
+
+          - id: logoscope
+            repo: probelabs/logoscope
+            description: |
+              Logoscope - AI Log Analysis CLI:
+              - Pattern detection and temporal analytics
+              - Anomaly detection in log streams
+              - Streaming support
+              - npm wrapper and MCP server
+
+          - id: docs-mcp
+            repo: probelabs/docs-mcp
+            description: |
+              Docs MCP - GitHub Repo to MCP Server:
+              - Turns any GitHub repo into an MCP server
+              - Chat with code or documentation
+              - Dynamic context extraction
+
+          - id: memaris
+            repo: probelabs/memaris
+            description: |
+              Memaris - Claude Code Session Memory:
+              - Converts past Claude Code sessions to persistent memory
+              - Prevents re-teaching AI the same context
+              - Session analysis and knowledge extraction
+
+          - id: afk
+            repo: probelabs/afk
+            description: |
+              AFK - Remote Control for Claude Code:
+              - Telegram-based remote control and approval
+              - Zero dependencies, Node.js built-ins only
+              - Session monitoring and notification
+
+          - id: big-brain
+            repo: probelabs/big-brain
+            description: |
+              BigBrain MCP Server:
+              - Intelligent context extraction
+              - Round-trip workflow for fresh AI insights
+              - Used when AI agent gets stuck
+
+          - id: vow
+            repo: probelabs/vow
+            description: |
+              Vow - Accountability Gates for AI Agents:
+              - Safety gates for autonomous AI operations
+              - Approval workflows and audit trails
+              - Human-in-the-loop checkpoints
+
+          - id: sandboxjs
+            repo: probelabs/SandboxJS
+            description: |
+              SandboxJS - Safe Eval Runtime:
+              - Sandboxed JavaScript execution
+              - Used by Visor for safe expression evaluation
+
+# -----------------------------------------------------------------------------
+# Code Help - general code assistance knowledge
+# -----------------------------------------------------------------------------
+- id: code-help
+  description: questions about code, implementation, documentation, or debugging for ProbeLabs projects
+  intent: code_help
+  knowledge: |
+    {% readfile "docs/code-help-mode.md" %}
+
+# -----------------------------------------------------------------------------
+# Engineer - make code changes and create PRs
+# -----------------------------------------------------------------------------
+- id: engineer
+  description: user wants code changes made, a PR created, or feature implemented in a ProbeLabs project
+  requires: [code-explorer]
+  knowledge: |
+    {% readfile "docs/engineer-tool.md" %}
+  tools:
+    engineer:
+      workflow: engineer
+      inputs: {}

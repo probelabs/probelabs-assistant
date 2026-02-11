@@ -1,0 +1,21 @@
+# Intents for the ProbeLabs Assistant
+# This file can be loaded via: expression: "loadConfig('config/intents.yaml')"
+
+- id: chat
+  description: |
+    general Q&A, follow-up questions, small talk, or simple requests.
+    Also use for:
+      - "what can you do?" / capabilities questions
+      - "summarize this thread" / thread summary requests
+    These are handled via tags, not separate intents.
+
+- id: code_help
+  description: |
+    user asks about code, implementation, documentation, debugging, OR wants to make changes.
+    Includes:
+      - Code/implementation questions ("how does Probe search work?")
+      - Documentation questions ("where is X documented?")
+      - Technical architecture questions ("how is Visor review pipeline implemented?")
+      - CI/pipeline failure investigation ("why is this test failing?")
+      - GitHub Actions debugging
+      - Making code changes, creating PRs, implementing features (use with 'engineer' tag)

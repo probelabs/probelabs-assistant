@@ -1,0 +1,202 @@
+version: "1.0"
+
+id: engineer
+name: ProbeLabs Code Engineer
+
+# Reusable workflow: engineer
+#
+# Goal:
+#   Make code changes, create PRs, and implement features using Claude Code.
+#   This workflow is designed to be called from an agent that has already
+#   explored the codebase using code-explorer.
+#
+# Input contract:
+#   - inputs.task: string (required) - Description of what to implement/fix
+#   - inputs.context: string (optional) - Additional context from prior exploration
+#   - inputs.projects: array (optional) - List of project paths to add to Claude Code
+#
+# Output contract:
+#   - result.text: string - Summary of what was done
+
+inputs:
+  - name: task
+    required: true
+    description: The task to implement
+    schema:
+      type: string
+
+  - name: context
+    required: false
+    description: Context from prior code exploration (e.g., from code-explorer)
+    default: ""
+    schema:
+      type: string
+
+  - name: projects
+    required: false
+    description: List of project directory paths to add to Claude Code workspace
+    default: []
+    schema:
+      type: array
+      items:
+        type: string
+
+  - name: architecture
+    required: false
+    description: Architecture document with project topology and guidelines
+    default: |
+      {% readfile "docs/probelabs-architecture.md" %}
+    schema:
+      type: string
+
+outputs:
+  - name: result
+    value_js: |
+      const engineerStep = outputs?.['engineer-task'];
+      if (typeof engineerStep === 'string') {
+        return { text: engineerStep };
+      }
+      if (engineerStep && typeof engineerStep === 'object') {
+        if (typeof engineerStep.stdout === 'string') return { text: engineerStep.stdout };
+        if (typeof engineerStep.value === 'string') return { text: engineerStep.value };
+        if (engineerStep.value?.text) return engineerStep.value;
+        return engineerStep;
+      }
+      return null;
+
+steps:
+  build-engineer-prompt:
+    type: script
+    criticality: internal
+    schema:
+      type: object
+      properties:
+        command:
+          type: string
+    assume:
+      - "true"
+    fanout: reduce
+    content: |
+      const task = inputs.task ?? '';
+      const context = inputs.context ?? '';
+      const architecture = inputs.architecture ?? '';
+      const projects = Array.isArray(inputs.projects) ? inputs.projects : [];
+
+      const promptLines = [
+        '<task>',
+        task,
+        '</task>',
+        ''
+      ];
+
+      if (context && context.trim()) {
+        promptLines.push(
+          '<context>',
+          'The following context was gathered from prior code exploration:',
+          '',
+          context,
+          '</context>',
+          ''
+        );
+      }
+
+      promptLines.push(
+        '<architecture>',
+        architecture,
+        '</architecture>',
+        '',
+        '<instructions>',
+        'You are a senior engineer working on ProbeLabs projects. Your goal is to implement the task described above.',
+        '',
+        '## CRITICAL: Think Before You Code',
+        '',
+        'DO NOT rush to implement. Follow this process:',
+        '',
+        '**IMPORTANT: If the task requires changes to MULTIPLE repositories, you MUST complete ALL of them.**',
+        '',
+        '### Phase 1: Clarify Requirements',
+        '',
+        'Before writing ANY code, review the task and context. If anything is unclear:',
+        '- STOP and list your questions',
+        '- Ask the user for clarification BEFORE proceeding',
+        '',
+        '### Phase 2: Plan the Implementation',
+        '',
+        '1. List ALL repositories that need changes',
+        '2. For EACH repository, list all files to modify or create',
+        '3. Describe the specific changes for each file',
+        '4. Identify dependencies between changes',
+        '',
+        '### Phase 3: Implement',
+        '',
+        '- Follow existing code style and patterns',
+        '- Keep changes focused and minimal',
+        '- For multi-repo tasks, use sub-agents for parallel work',
+        '',
+        '### Phase 4: Verify',
+        '',
+        '- Run the appropriate build command (cargo build, npm run build, go build)',
+        '- Run tests if applicable',
+        '',
+        '### Phase 5: Deliver',
+        '',
+        '- Create PR using gh tool',
+        '- Provide summary of changes with file list',
+        '- Include build verification status',
+        '</instructions>'
+      );
+      const prompt = promptLines.join('\n');
+
+      const promptBase64 = btoa(unescape(encodeURIComponent(prompt)));
+      let cmd = 'echo "' + promptBase64 + '" | base64 -d | claude -p --dangerously-skip-permissions';
+
+      for (const dir of projects) {
+        if (dir && typeof dir === 'string') {
+          cmd += ' --add-dir "' + dir.replace(/"/g, '\\"') + '"';
+        }
+      }
+
+      return { command: cmd };
+
+  engineer-task:
+    type: command
+    criticality: policy
+    depends_on: [build-engineer-prompt]
+    assume:
+      - "outputs['build-engineer-prompt'] != null"
+    guarantee: "output != null"
+    timeout: 1800000
+    exec: "{{ outputs['build-engineer-prompt'].command }}"
+    transform_js: |
+      if (typeof output === 'string') {
+        return { text: output };
+      }
+      if (output?.text) return output;
+      if (output?.stdout) return { text: output.stdout };
+      if (typeof output?.value === 'string') return { text: output.value };
+      if (output?.value?.text) return output.value;
+      return { text: String(output ?? '') };
+
+tests:
+  defaults:
+    strict: true
+    ai_provider: mock
+
+  cases:
+    - name: basic-engineering-task
+      event: manual
+      fixture: local.minimal
+      workflow_input:
+        task: "Add a new search filter to Probe for file type exclusion"
+        context: "The search module is in src/search/. Filters are applied in src/search/filters.rs."
+      mocks:
+        engineer-task: "Added file type exclusion filter. Files changed: src/search/filters.rs"
+      expect:
+        calls:
+          - step: build-engineer-prompt
+            exactly: 1
+          - step: engineer-task
+            exactly: 1
+        workflow_output:
+          - path: result.text
+            contains: "Added file type exclusion"
