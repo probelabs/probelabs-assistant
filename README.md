@@ -1,6 +1,6 @@
 # ProbeLabs Assistant
 
-This is the AI assistant that ProbeLabs runs internally. It's how we use [Probe](https://github.com/probelabs/probe) and [Visor](https://github.com/probelabs/visor) ourselves — a real-world, production implementation that covers our entire codebase of 15 repositories spanning Rust, TypeScript, Go, and Node.js.
+This is the AI assistant that ProbeLabs runs internally. It's how we use [Probe](https://github.com/probelabs/probe) and [Visor](https://github.com/probelabs/visor) ourselves — a real-world, production implementation that covers our entire codebase of 16 repositories spanning Rust, TypeScript, Go, and Node.js.
 
 We open-sourced it so you can see exactly how a Probe-based assistant works at scale: how skills are structured, how code-talk explores multiple repos, how GitHub integration feeds context into conversations, and how the engineer workflow turns questions into pull requests.
 
@@ -101,6 +101,7 @@ The code-explorer skill covers all ProbeLabs projects with smart routing — it 
 | [SandboxJS](https://github.com/probelabs/SandboxJS) | JavaScript | Safe eval runtime |
 | [probelabs.com](https://github.com/probelabs/probelabs.com) | Web | Company website |
 | [probe-quickstart](https://github.com/probelabs/probe-quickstart) | YAML | Quickstart template for building assistants |
+| [company-data](https://github.com/probelabs/company-data) | — | Internal knowledge base — commercial docs, ideas, strategy (private) |
 | [ground-control](https://github.com/probelabs/ground-control) | — | AI chat interface (private) |
 
 ## Example Conversations

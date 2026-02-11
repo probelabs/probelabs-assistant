@@ -92,6 +92,13 @@ probelabs.com (website)
   └── Marketing site for all products
 ```
 
+## Internal Knowledge
+
+### Company Data
+- **Repo**: `probelabs/company-data` (private)
+- **Purpose**: Internal knowledge base — commercial docs, ideas, strategy, business context
+- **Note**: Not code — use `analyze_all` for comprehensive document analysis
+
 ## Tech Stack Summary
 
 | Language | Projects |

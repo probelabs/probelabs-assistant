@@ -100,6 +100,13 @@
 
           6. Quickstart / templates -> `probe-quickstart`
              - Questions about getting started, project templates
+
+          7. Business / commercial questions -> MUST include `company-data`
+             - Questions about customers, deals, proposals, pricing
+             - Questions about product strategy, roadmap, ideas
+             - Questions about market research, competitors
+             - This is a knowledge base of documents (not code)
+             - Use `analyze_all` tool for comprehensive answers
         docs_repo: probelabs/probe
         docs_ref: master
         max_projects: 8
@@ -234,6 +241,17 @@
               SandboxJS - Safe Eval Runtime:
               - Sandboxed JavaScript execution
               - Used by Visor for safe expression evaluation
+
+          - id: company-data
+            repo: probelabs/company-data
+            description: |
+              Company Data - Internal Knowledge Base (NOT code):
+              - Commercial documents, proposals, and agreements
+              - Product ideas, roadmap notes, and strategy
+              - Business context, market research, and competitive analysis
+              - Internal processes and decision records
+              IMPORTANT: Use `analyze_all` tool (not search) for this repository.
+              analyze_all processes ALL documents using map-reduce for comprehensive analysis.
 
 # -----------------------------------------------------------------------------
 # Code Help - general code assistance knowledge
