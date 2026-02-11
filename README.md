@@ -195,6 +195,10 @@ See the [probe-quickstart](https://github.com/probelabs/probe-quickstart) README
 - [visor-ee](https://github.com/probelabs/visor-ee) — Enterprise workflows (assistant pipeline, code-talk, engineer)
 - [probe](https://github.com/probelabs/probe) — Semantic code search engine used by code-talk
 
+## Open Source
+
+This assistant is fully open source and available at [probelabs/probelabs-assistant](https://github.com/probelabs/probelabs-assistant). Use it as a real-world example of a production Visor assistant — fork it, study the skill definitions, or adapt the architecture for your own team's needs.
+
 ## License
 
 MIT
