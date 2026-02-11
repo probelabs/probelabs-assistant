@@ -18,4 +18,5 @@
       - Technical architecture questions ("how is Visor review pipeline implemented?")
       - CI/pipeline failure investigation ("why is this test failing?")
       - GitHub Actions debugging
+      - Website questions ("update the landing page", "change pricing on the site", "how does our website work?")
       - Making code changes, creating PRs, implementing features (use with 'engineer' tag)
