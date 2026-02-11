@@ -56,6 +56,14 @@
     {% readfile "docs/github-actions-debugging.md" %}
 
 # -----------------------------------------------------------------------------
+# Find External Contributions - discover non-member PRs and issues
+# -----------------------------------------------------------------------------
+- id: find_external_contributions
+  description: user wants to find public PRs or issues created by non-members of a GitHub organization, or asks about external/community contributions
+  knowledge: |
+    {% readfile "docs/find-external-contributions.md" %}
+
+# -----------------------------------------------------------------------------
 # Code Exploration - explore the ProbeLabs codebase
 # -----------------------------------------------------------------------------
 - id: code-explorer
