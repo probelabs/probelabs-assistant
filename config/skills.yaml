@@ -242,6 +242,17 @@
               - Sandboxed JavaScript execution
               - Used by Visor for safe expression evaluation
 
+          - id: probelabs-assistant
+            repo: probelabs/probelabs-assistant
+            description: |
+              ProbeLabs Assistant - This assistant's own configuration:
+              - probelabs-assistant.yaml - main config
+              - config/skills.yaml - skill definitions
+              - config/intents.yaml - intent routing
+              - docs/ - knowledge files
+              - workflows/ - engineer workflow
+              Use when the assistant needs to update or extend itself.
+
           - id: company-data
             repo: probelabs/company-data
             description: |
@@ -252,6 +263,15 @@
               - Internal processes and decision records
               IMPORTANT: Use `analyze_all` tool (not search) for this repository.
               analyze_all processes ALL documents using map-reduce for comprehensive analysis.
+
+# -----------------------------------------------------------------------------
+# Assistant Config - updating the assistant itself
+# -----------------------------------------------------------------------------
+- id: assistant-config
+  description: user asks to update, extend, or configure this assistant, add new skills, or teach it something new
+  requires: [code-explorer]
+  knowledge: |
+    {% readfile "docs/updating-assistant.md" %}
 
 # -----------------------------------------------------------------------------
 # Code Help - general code assistance knowledge
