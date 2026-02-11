@@ -74,58 +74,9 @@ checks:
 # =============================================================================
 # Tests
 # =============================================================================
-tests:
-  defaults:
-    strict: true
-    ai_provider: mock
-
-  cases:
-    - name: github-skill-activation
-      description: GitHub skill activates for repo browsing requests
-      flow:
-        - name: github-flow
-          event: manual
-          fixture: local.minimal
-          routing:
-            max_loops: 0
-          execution_context:
-            conversation:
-              transport: slack
-              thread: { id: "test-1" }
-              messages: [{ role: user, text: "Show me recent PRs on probe", timestamp: "2024-01-01T00:00:00Z" }]
-              current: { role: user, text: "Show me recent PRs on probe", timestamp: "2024-01-01T00:00:00Z" }
-              attributes: { channel: "C123", user: "U456" }
-          mocks:
-            chat[]:
-              - text: "Here are the recent PRs for probelabs/probe..."
-              - intent: chat
-              - skills: [github]
-          expect:
-            calls:
-              - step: chat
-                exactly: 1
-
-    - name: code-explorer-skill-activation
-      description: Code explorer activates for code questions
-      flow:
-        - name: code-flow
-          event: manual
-          fixture: local.minimal
-          routing:
-            max_loops: 0
-          execution_context:
-            conversation:
-              transport: slack
-              thread: { id: "test-2" }
-              messages: [{ role: user, text: "How does Probe's tree-sitter integration work?", timestamp: "2024-01-01T00:00:00Z" }]
-              current: { role: user, text: "How does Probe's tree-sitter integration work?", timestamp: "2024-01-01T00:00:00Z" }
-              attributes: { channel: "C123", user: "U456" }
-          mocks:
-            chat[]:
-              - text: "Probe uses tree-sitter for AST-aware code extraction..."
-              - intent: code_help
-              - skills: [code-explorer]
-          expect:
-            calls:
-              - step: chat
-                exactly: 1
+# Integration tests for the full assistant pipeline (intent routing, skill
+# activation, Slack context) require the visor-ee engine and run via:
+#   visor run --tags test probelabs-assistant.yaml
+#
+# Standalone workflow tests (engineer, etc.) run via:
+#   visor test
