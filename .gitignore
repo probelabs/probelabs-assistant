@@ -3,3 +3,5 @@ node_modules/
 .visor/
 *.log
 .DS_Store
+debug-artifacts/
+output/
