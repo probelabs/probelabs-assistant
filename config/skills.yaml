@@ -302,3 +302,14 @@
     engineer:
       workflow: engineer
       inputs: {}
+
+# -----------------------------------------------------------------------------
+# Scheduler - schedule workflow executions
+# -----------------------------------------------------------------------------
+- id: scheduler
+  description: user wants to schedule, list, or cancel scheduled workflow executions, or set reminders
+  knowledge: |
+    {% readfile "docs/scheduler-tool.md" %}
+  tools:
+    schedule:
+      tool: schedule
