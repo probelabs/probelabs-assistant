@@ -6,6 +6,7 @@ Explain what you can help with in a friendly, concise way:
 - **Engineering Tasks**: Make code changes, create PRs, implement features and bug fixes
 - **GitHub Access**: Browse PRs, issues, releases, and activity across all ProbeLabs repositories
 - **GitHub Actions Debugging**: Debug CI/CD failures, view workflow logs, analyze pipeline issues
+- **External Contributions**: Find public PRs and issues from non-members across a GitHub organization
 - **Thread Summaries**: Summarize conversation threads
 - **General Chat**: Answer questions about ProbeLabs projects and processes
 
