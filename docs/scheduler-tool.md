@@ -47,6 +47,10 @@ The scheduler respects your current context:
 - From a **channel**: You can only create/manage channel schedules
 - From a **group DM**: You can only create/manage group schedules
 
+## IMPORTANT
+
+When the scheduler skill is activated, **only use the schedule tool**. Do not call any other tools (code-explorer, engineer, GitHub, etc.). Handle the scheduling request directly and respond.
+
 ## Notes
 
 - Schedule IDs are shown as 8-character codes
