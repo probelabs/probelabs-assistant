@@ -119,14 +119,19 @@ def update_env_file(key, value):
         f.writelines(lines)
 
 
+def get_oauth2_client_creds():
+    """Get OAuth 2.0 client credentials, preferring TWITTER_CLIENT_ID/SECRET."""
+    client_id = os.environ.get('TWITTER_CLIENT_ID', '') or os.environ.get('TWITTER_CONSUMER_KEY', '')
+    client_secret = os.environ.get('TWITTER_CLIENT_SECRET', '') or os.environ.get('TWITTER_SECRET_KEY', '')
+    if not client_id or not client_secret:
+        print("Error: TWITTER_CLIENT_ID and TWITTER_CLIENT_SECRET must be set in .env")
+        sys.exit(1)
+    return client_id, client_secret
+
+
 def full_flow():
     """Run the full OAuth 2.0 PKCE flow with a local callback server."""
-    client_id = os.environ.get('TWITTER_CONSUMER_KEY', '')
-    client_secret = os.environ.get('TWITTER_SECRET_KEY', '')
-
-    if not client_id or not client_secret:
-        print("Error: TWITTER_CONSUMER_KEY and TWITTER_SECRET_KEY must be set in .env")
-        sys.exit(1)
+    client_id, client_secret = get_oauth2_client_creds()
 
     redirect_uri = 'http://localhost:3000/callback'
 
@@ -222,8 +227,7 @@ def full_flow():
 
 def do_refresh():
     """Refresh an expired token."""
-    client_id = os.environ.get('TWITTER_CONSUMER_KEY', '')
-    client_secret = os.environ.get('TWITTER_SECRET_KEY', '')
+    client_id, client_secret = get_oauth2_client_creds()
     refresh_tok = os.environ.get('TWITTER_OAUTH2_REFRESH_TOKEN', '')
 
     if not refresh_tok:
