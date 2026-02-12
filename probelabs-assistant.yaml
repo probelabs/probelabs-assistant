@@ -19,6 +19,7 @@ version: "1.0"
 imports:
   - https://raw.githubusercontent.com/probelabs/visor-ee/master/workflows/assistant.yaml
   - workflows/engineer.yaml
+  - workflows/twitter.yaml
 
 workspace:
   enabled: true

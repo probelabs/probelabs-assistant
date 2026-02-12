@@ -1,0 +1,121 @@
+version: "1.0"
+
+id: twitter
+name: Twitter/X API
+
+# Reusable workflow: twitter
+#
+# Goal:
+#   Interact with the Twitter/X API v2 — read tweets, search, get bookmarks,
+#   and fetch user timelines.
+#
+# Input contract:
+#   - inputs.action: string (required) - One of: read_tweet, search, bookmarks, user_tweets
+#   - inputs.query: string (required for read_tweet/search/user_tweets) - Tweet URL/ID, search query, or username
+#   - inputs.max_results: number (optional) - Number of results (10-100, default 10)
+#
+# Output contract:
+#   - result: object - JSON response from Twitter API
+
+inputs:
+  - name: action
+    required: true
+    description: "The action to perform: read_tweet, search, bookmarks, user_tweets"
+    schema:
+      type: string
+
+  - name: query
+    required: false
+    description: "Tweet URL or ID (for read_tweet), search query (for search), or username (for user_tweets)"
+    default: ""
+    schema:
+      type: string
+
+  - name: max_results
+    required: false
+    description: "Number of results to return (10-100, only for search/bookmarks/user_tweets)"
+    default: 10
+    schema:
+      type: number
+
+outputs:
+  - name: result
+    value_js: |
+      const step = outputs?.['twitter-request'];
+      if (typeof step === 'string') {
+        try { return JSON.parse(step); } catch(e) { return { text: step }; }
+      }
+      if (step?.stdout) {
+        try { return JSON.parse(step.stdout); } catch(e) { return { text: step.stdout }; }
+      }
+      return step;
+
+steps:
+  build-twitter-command:
+    type: script
+    criticality: internal
+    schema:
+      type: object
+      properties:
+        command:
+          type: string
+    assume:
+      - "true"
+    fanout: reduce
+    content: |
+      const action = inputs.action ?? '';
+      const query = inputs.query ?? '';
+      const maxResults = inputs.max_results ?? 10;
+
+      const scriptDir = env.VISOR_ORIGINAL_WORKDIR || '.';
+      const scriptPath = scriptDir + '/scripts/twitter-api.py';
+
+      const args = [action];
+      if (query) {
+        args.push(JSON.stringify(query));
+      }
+      if (['search', 'bookmarks', 'user_tweets'].includes(action) && maxResults) {
+        args.push('--max_results=' + maxResults);
+      }
+
+      const command = 'python3 ' + scriptPath + ' ' + args.join(' ');
+      return { command };
+
+  twitter-request:
+    type: command
+    criticality: policy
+    depends_on: [build-twitter-command]
+    assume:
+      - "outputs['build-twitter-command'] != null"
+    guarantee: "output != null"
+    timeout: 30000
+    exec: "{{ outputs['build-twitter-command'].command }}"
+    transform_js: |
+      if (typeof output === 'string') {
+        try { return JSON.parse(output); } catch(e) { return { text: output }; }
+      }
+      if (output?.stdout) {
+        try { return JSON.parse(output.stdout); } catch(e) { return { text: output.stdout }; }
+      }
+      return output;
+
+tests:
+  defaults:
+    strict: true
+    ai_provider: mock
+
+  cases:
+    - name: read-tweet-test
+      event: manual
+      fixture: local.minimal
+      workflow_input:
+        action: "read_tweet"
+        query: "https://x.com/user/status/123456"
+      mocks:
+        twitter-request: '{"id":"123456","text":"Hello world","author":"@user (User)"}'
+      expect:
+        calls:
+          - step: build-twitter-command
+            exactly: 1
+          - step: twitter-request
+            exactly: 1
