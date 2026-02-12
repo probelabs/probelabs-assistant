@@ -44,6 +44,8 @@
 # -----------------------------------------------------------------------------
 - id: github
   description: request references GitHub PRs, issues, releases, branches, or needs to browse repository metadata for any ProbeLabs project
+  allowed_commands:
+    - 'gh *'
   knowledge: |
     {% readfile "docs/github-tools.md" %}
 
@@ -52,6 +54,8 @@
 # -----------------------------------------------------------------------------
 - id: github-actions
   description: request involves debugging GitHub Actions workflows, CI/CD pipelines, or build failures
+  allowed_commands:
+    - 'gh *'
   knowledge: |
     {% readfile "docs/github-actions-debugging.md" %}
 
@@ -324,6 +328,11 @@
 - id: engineer
   description: user wants code changes made, a PR created, or feature implemented in a ProbeLabs project
   requires: [code-explorer]
+  allowed_commands:
+    - 'git *'
+    - 'npm *'
+    - 'npx *'
+    - 'ls -F'
   knowledge: |
     {% readfile "docs/engineer-tool.md" %}
   tools:
@@ -340,6 +349,9 @@
     or wants to investigate a specific bot interaction. Includes: "analyze trace",
     "debug trace", "why did the bot do X", "check trace ID", "what happened in trace",
     references to trace_id=, span_id=, or hex trace IDs like "a95d6300e2117df6..."
+  allowed_commands:
+    - 'curl *'
+    - 'jq *'
   knowledge: |
     {% readfile "docs/assistant-debugging.md" %}
 
