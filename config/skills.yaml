@@ -304,6 +304,18 @@
       inputs: {}
 
 # -----------------------------------------------------------------------------
+# Assistant Debugging - debug the assistant and analyze traces
+# -----------------------------------------------------------------------------
+- id: assistant-debugging
+  description: |
+    user provides a trace ID to analyze, asks to debug why the assistant behaved a certain way,
+    or wants to investigate a specific bot interaction. Includes: "analyze trace",
+    "debug trace", "why did the bot do X", "check trace ID", "what happened in trace",
+    references to trace_id=, span_id=, or hex trace IDs like "a95d6300e2117df6..."
+  knowledge: |
+    {% readfile "docs/assistant-debugging.md" %}
+
+# -----------------------------------------------------------------------------
 # Scheduler - schedule workflow executions
 # -----------------------------------------------------------------------------
 - id: scheduler
