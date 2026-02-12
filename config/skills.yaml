@@ -288,6 +288,19 @@
               analyze_all processes ALL documents using map-reduce for comprehensive analysis.
 
 # -----------------------------------------------------------------------------
+# Spec Refinement - create and refine product specifications
+# -----------------------------------------------------------------------------
+- id: spec-refinement
+  description: |
+    user wants to create, refine, or review a product specification, PRD, or feature design.
+    Includes: writing specs, refining requirements, asking follow-up questions about a feature,
+    evaluating if a spec is implementation-ready, or discussing product ideas that need to be
+    turned into structured specs.
+  requires: [code-explorer]
+  knowledge: |
+    {% readfile "docs/spec-refinement.md" %}
+
+# -----------------------------------------------------------------------------
 # Assistant Config - updating the assistant itself
 # -----------------------------------------------------------------------------
 - id: assistant-config
