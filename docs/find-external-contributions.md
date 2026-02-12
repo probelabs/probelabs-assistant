@@ -70,28 +70,18 @@ Present the results clearly:
 - The `gh search` commands may hit GitHub's search query length limits for organizations with very many members. If this happens, report the limitation to the user.
 - Bot accounts (like `dependabot[bot]`) are not org members and will appear in results. Mention this if bot-authored items are present.
 
-### Advanced Usage: Creating a Scheduled Report
+### Expected response:
 
-This skill can be combined with other skills like `scheduler` and `github` to create powerful, automated reports.
+<example>
+External Contributions (Last 7 Days)
 
-*Example Scenario:* "set a daily morning reminder to show me currently opened OSS external contributions for last 7 days... Also give a brief on stars changed in last 24 hours"
+I searched for open pull requests and issues created by non-members in the probelabs organization within the last 7 days (since 2026-02-05) and found no new external contributions.
 
-*Execution Analysis (from trace `bd8080deedef1f005acf70152c034d36`):*
+GitHub Star Changes (Last 24 Hours)
 
-1.  *Decomposition*: The assistant correctly identified that this request required three separate skills:
-    *   `scheduler`: To handle the "daily morning reminder" part.
-    *   `find_external_contributions`: To perform the core task of finding PRs and issues from non-members.
-    *   `github`: To fetch repository star statistics.
+Here are the repositories with new stargazers in the last 24 hours:
 
-2.  *Orchestration*: The assistant chained these skills together:
-    *   It first used the `scheduler` to set up the recurring task.
-    *   The task's *action* was then defined by the combined logic of the `find_external_contributions` and `github` skills.
-    *   The `find_external_contributions` logic was executed exactly as described in the steps above (fetch members, build exclusion query, search).
-    *   The `github` skill was then used to gather star counts.
-    *   Finally, the results from both were formatted into a single, coherent report to be delivered by the scheduler.
-
-*Tips & Tricks for Complex Reporting:*
-
-*   *Combine Skills*: Don't be afraid to activate multiple skills to fulfill a complex request. The assistant is designed to orchestrate them.
-*   *Be Specific*: The more specific the user's request (e.g., "daily morning", "last 7 days"), the better the assistant can select and configure the right tools.
-*   *Leverage Scheduling*: For any recurring reporting need, always combine the reporting skill (like this one) with the `scheduler` skill.
+• probelabs/probe: 5 new stars from mujhematkhojo, marcel-more, alexsmoy, HunterDG, and liliana-grigor.
+• probelabs/probe-quickstart: 1 new star from liliana-grigor.
+• probelabs/SandboxJS: 1 new star from Mattabase.
+</example>
