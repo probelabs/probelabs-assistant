@@ -20,6 +20,8 @@ To schedule a simple text reminder, just describe what you want to be reminded o
 
 ## Scheduling a Workflow (Advanced)
 
+> **⚠️ Caution:** This is an advanced feature and is **not required for most use cases**. Most users only need simple text reminders (see above). Only use workflow scheduling if you are **absolutely sure** about the exact workflow name you are providing. Specifying an incorrect or nonexistent workflow name will result in a failed execution.
+
 To schedule a specific workflow, you **MUST** prefix the workflow name with a `%` symbol. This tells the scheduler that you want to execute a named workflow instead of creating a simple text reminder.
 
 If you do not use the `%` prefix, your entire request will be treated as the text for a reminder.
