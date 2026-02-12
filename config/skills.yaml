@@ -44,6 +44,8 @@
 # -----------------------------------------------------------------------------
 - id: github
   description: request references GitHub PRs, issues, releases, branches, or needs to browse repository metadata for any ProbeLabs project
+  allowed_commands:
+    - 'gh *'
   knowledge: |
     {% readfile "docs/github-tools.md" %}
 
@@ -52,6 +54,8 @@
 # -----------------------------------------------------------------------------
 - id: github-actions
   description: request involves debugging GitHub Actions workflows, CI/CD pipelines, or build failures
+  allowed_commands:
+    - 'gh *'
   knowledge: |
     {% readfile "docs/github-actions-debugging.md" %}
 
@@ -60,6 +64,8 @@
 # -----------------------------------------------------------------------------
 - id: find_external_contributions
   description: user wants to find public PRs or issues created by non-members of a GitHub organization, or asks about external/community contributions
+  allowed_commands:
+    - 'gh *'
   knowledge: |
     {% readfile "docs/find-external-contributions.md" %}
 
@@ -324,6 +330,16 @@
 - id: engineer
   description: user wants code changes made, a PR created, or feature implemented in a ProbeLabs project
   requires: [code-explorer]
+  allowed_commands:
+    - 'git *'
+    - 'npm *'
+    - 'npx *'
+    - 'cargo *'
+    - 'go *'
+    - 'make *'
+    - 'docker *'
+    - 'gh *'
+    - 'ls *'
   knowledge: |
     {% readfile "docs/engineer-tool.md" %}
   tools:
