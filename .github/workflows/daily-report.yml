@@ -1,0 +1,151 @@
+name: Daily Report
+
+on:
+  schedule:
+    # 9 AM UTC, Monday through Friday
+    - cron: "0 9 * * 1-5"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  daily-report:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      ORG: probelabs
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Generate report and post to Slack
+        run: |
+          set -euo pipefail
+
+          SINCE_DATE=$(date -u -d '24 hours ago' '+%Y-%m-%d')
+          REPORT=""
+
+          # -------------------------------------------------------
+          # Section 1: External Contributions (last 24 hours)
+          # -------------------------------------------------------
+
+          # Fetch org members
+          MEMBERS_JSON=$(gh api graphql --paginate -f query='
+            query($org: String!, $cursor: String) {
+              organization(login: $org) {
+                membersWithRole(first: 100, after: $cursor) {
+                  nodes { login }
+                  pageInfo { hasNextPage endCursor }
+                }
+              }
+            }' -f org="$ORG")
+
+          MEMBERS=$(echo "$MEMBERS_JSON" | jq -r '.data.organization.membersWithRole.nodes[].login' | sort -u)
+
+          # Build exclusion string
+          EXCLUDE=""
+          while IFS= read -r member; do
+            [ -n "$member" ] && EXCLUDE="$EXCLUDE -author:$member"
+          done <<< "$MEMBERS"
+
+          SEARCH_QUERY="is:public created:>=${SINCE_DATE}${EXCLUDE}"
+
+          # Search for external PRs
+          EXTERNAL_PRS=$(gh search prs --org "$ORG" "$SEARCH_QUERY" --limit 100 --json title,repository,author,url 2>/dev/null || echo "[]")
+          # Search for external issues
+          EXTERNAL_ISSUES=$(gh search issues --org "$ORG" "$SEARCH_QUERY" --limit 100 --json title,repository,author,url 2>/dev/null || echo "[]")
+
+          PR_COUNT=$(echo "$EXTERNAL_PRS" | jq 'length')
+          ISSUE_COUNT=$(echo "$EXTERNAL_ISSUES" | jq 'length')
+
+          CONTRIB_SECTION=":busts_in_silhouette: *External Contributions (last 24h)*\n"
+
+          if [ "$PR_COUNT" -gt 0 ]; then
+            CONTRIB_SECTION="${CONTRIB_SECTION}\n*Pull Requests (${PR_COUNT}):*\n"
+            CONTRIB_SECTION="${CONTRIB_SECTION}$(echo "$EXTERNAL_PRS" | jq -r '.[] | "• <\(.url)|\(.title)> in \(.repository.nameWithOwner // .repository.name) by \(.author.login)"')\n"
+          fi
+
+          if [ "$ISSUE_COUNT" -gt 0 ]; then
+            CONTRIB_SECTION="${CONTRIB_SECTION}\n*Issues (${ISSUE_COUNT}):*\n"
+            CONTRIB_SECTION="${CONTRIB_SECTION}$(echo "$EXTERNAL_ISSUES" | jq -r '.[] | "• <\(.url)|\(.title)> in \(.repository.nameWithOwner // .repository.name) by \(.author.login)"')\n"
+          fi
+
+          if [ "$PR_COUNT" -eq 0 ] && [ "$ISSUE_COUNT" -eq 0 ]; then
+            CONTRIB_SECTION="${CONTRIB_SECTION}No external contributions in the last 24 hours.\n"
+          fi
+
+          REPORT="${CONTRIB_SECTION}"
+
+          # -------------------------------------------------------
+          # Section 2: GitHub Stars Report
+          # -------------------------------------------------------
+
+          STAR_FILE="data/star-counts.json"
+          PREVIOUS_STARS=$(cat "$STAR_FILE")
+
+          # Fetch current star counts for all public repos
+          REPOS_JSON=$(gh api --paginate "/orgs/$ORG/repos?type=public&per_page=100" --jq '.[] | {name: .full_name, stars: .stargazers_count}')
+
+          # Build current star counts object
+          CURRENT_STARS=$(echo "$REPOS_JSON" | jq -s 'map({(.name): .stars}) | add // {}')
+
+          # Calculate changes
+          STARS_SECTION=":star: *GitHub Stars Report*\n"
+          HAS_CHANGES=false
+
+          for repo in $(echo "$CURRENT_STARS" | jq -r 'keys[]'); do
+            current=$(echo "$CURRENT_STARS" | jq -r --arg r "$repo" '.[$r]')
+            previous=$(echo "$PREVIOUS_STARS" | jq -r --arg r "$repo" '.[$r] // empty')
+
+            if [ -n "$previous" ] && [ "$current" != "$previous" ]; then
+              diff=$((current - previous))
+              if [ "$diff" -gt 0 ]; then
+                sign="+"
+              else
+                sign=""
+              fi
+              STARS_SECTION="${STARS_SECTION}• *${repo}*: ${current} stars (${sign}${diff})\n"
+              HAS_CHANGES=true
+            fi
+          done
+
+          if [ "$HAS_CHANGES" = false ]; then
+            STARS_SECTION="${STARS_SECTION}No changes in star counts in the last 24 hours.\n"
+          fi
+
+          REPORT="${REPORT}\n${STARS_SECTION}"
+
+          # -------------------------------------------------------
+          # Post to Slack
+          # -------------------------------------------------------
+
+          HEADER=":newspaper: *ProbeLabs Daily Report — $(date -u '+%B %d, %Y')*\n\n"
+          FULL_MESSAGE="${HEADER}${REPORT}"
+
+          # Escape for JSON
+          PAYLOAD=$(jq -n --arg text "$(echo -e "$FULL_MESSAGE")" '{text: $text}')
+
+          curl -s -X POST -H 'Content-type: application/json' \
+            --data "$PAYLOAD" \
+            "$SLACK_WEBHOOK_URL"
+
+          # -------------------------------------------------------
+          # Update stored star counts
+          # -------------------------------------------------------
+
+          echo "$CURRENT_STARS" | jq '.' > "$STAR_FILE"
+
+      - name: Commit updated star counts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/star-counts.json
+          if git diff --cached --quiet; then
+            echo "No changes to star counts"
+          else
+            git commit -m "Update star counts [skip ci]"
+            git push
+          fi
