@@ -113,7 +113,6 @@
              - Questions about product specifications, feature requirements
              - Creating or refining specs, PRDs, design documents
              - Reviewing existing specifications
-             - This contains documents (not code), may use `analyze_all`
 
           8. Business / commercial questions -> MUST include `company-data`
              - Questions about customers, deals, proposals, pricing
@@ -270,13 +269,12 @@
           - id: specs
             repo: probelabs/specs
             description: |
-              Product Specifications (NOT code):
+              Product Specifications:
               - Product requirements documents (PRDs)
               - Feature specifications and design documents
               - Technical proposals and architecture decisions
               - Specs are created and refined through pull requests
               - Covers all ProbeLabs products (Probe, Visor, GoReplay, etc.)
-              Use `analyze_all` tool for comprehensive answers across specs.
 
           - id: company-data
             repo: probelabs/company-data
