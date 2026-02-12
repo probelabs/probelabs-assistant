@@ -7,15 +7,20 @@ name: Twitter/X API
 #
 # Goal:
 #   Interact with the Twitter/X API v2 — read tweets, search, get bookmarks,
-#   and fetch user timelines.
+#   and fetch user timelines. Uses a Python helper script that calls the API
+#   directly with no external dependencies.
 #
 # Input contract:
 #   - inputs.action: string (required) - One of: read_tweet, search, bookmarks, user_tweets
-#   - inputs.query: string (required for read_tweet/search/user_tweets) - Tweet URL/ID, search query, or username
-#   - inputs.max_results: number (optional) - Number of results (10-100, default 10)
+#   - inputs.query: string (required for read_tweet/search/user_tweets)
+#   - inputs.max_results: number (optional, 10-100, default 10)
 #
 # Output contract:
 #   - result: object - JSON response from Twitter API
+#
+# Environment:
+#   Credentials are loaded from .env by the Python script itself (auto-discovery).
+#   No env vars need to be passed explicitly.
 
 inputs:
   - name: action
@@ -23,6 +28,7 @@ inputs:
     description: "The action to perform: read_tweet, search, bookmarks, user_tweets"
     schema:
       type: string
+      enum: [read_tweet, search, bookmarks, user_tweets]
 
   - name: query
     required: false
@@ -37,17 +43,21 @@ inputs:
     default: 10
     schema:
       type: number
+      minimum: 10
+      maximum: 100
 
 outputs:
   - name: result
     value_js: |
       const step = outputs?.['twitter-request'];
+      if (!step) return null;
       if (typeof step === 'string') {
         try { return JSON.parse(step); } catch(e) { return { text: step }; }
       }
       if (step?.stdout) {
         try { return JSON.parse(step.stdout); } catch(e) { return { text: step.stdout }; }
       }
+      if (step?.text) return step;
       return step;
 
 steps:
@@ -67,15 +77,21 @@ steps:
       const query = inputs.query ?? '';
       const maxResults = inputs.max_results ?? 10;
 
-      const scriptDir = env.VISOR_ORIGINAL_WORKDIR || '.';
-      const scriptPath = scriptDir + '/scripts/twitter-api.py';
+      // Resolve script path: try VISOR_ORIGINAL_WORKDIR first (set by visor
+      // when workspace isolation is on), then fall back to CWD
+      const baseDir = (typeof env !== 'undefined' && env.VISOR_ORIGINAL_WORKDIR)
+        ? env.VISOR_ORIGINAL_WORKDIR
+        : '.';
+      const scriptPath = baseDir + '/scripts/twitter-api.py';
 
+      // Build args with proper shell escaping
+      const safeQuery = query.replace(/'/g, "'\\''");
       const args = [action];
       if (query) {
-        args.push(JSON.stringify(query));
+        args.push("'" + safeQuery + "'");
       }
       if (['search', 'bookmarks', 'user_tweets'].includes(action) && maxResults) {
-        args.push('--max_results=' + maxResults);
+        args.push('--max_results=' + Math.max(10, Math.min(100, maxResults)));
       }
 
       const command = 'python3 ' + scriptPath + ' ' + args.join(' ');
@@ -105,7 +121,7 @@ tests:
     ai_provider: mock
 
   cases:
-    - name: read-tweet-test
+    - name: read-tweet-builds-correct-command
       event: manual
       fixture: local.minimal
       workflow_input:
@@ -119,3 +135,63 @@ tests:
             exactly: 1
           - step: twitter-request
             exactly: 1
+        workflow_output:
+          - path: result.id
+            equals: "123456"
+          - path: result.text
+            equals: "Hello world"
+
+    - name: search-builds-correct-command
+      event: manual
+      fixture: local.minimal
+      workflow_input:
+        action: "search"
+        query: "claude code"
+        max_results: 20
+      mocks:
+        twitter-request: '{"query":"claude code","count":10,"tweets":[]}'
+      expect:
+        calls:
+          - step: build-twitter-command
+            exactly: 1
+          - step: twitter-request
+            exactly: 1
+        workflow_output:
+          - path: result.query
+            equals: "claude code"
+
+    - name: bookmarks-builds-correct-command
+      event: manual
+      fixture: local.minimal
+      workflow_input:
+        action: "bookmarks"
+      mocks:
+        twitter-request: '{"bookmarks_count":5,"bookmarks":[{"id":"1","text":"saved tweet"}]}'
+      expect:
+        calls:
+          - step: build-twitter-command
+            exactly: 1
+          - step: twitter-request
+            exactly: 1
+        workflow_output:
+          - path: result.bookmarks_count
+            equals: 5
+
+    - name: user-tweets-builds-correct-command
+      event: manual
+      fixture: local.minimal
+      workflow_input:
+        action: "user_tweets"
+        query: "buger"
+        max_results: 15
+      mocks:
+        twitter-request: '{"user":"@buger (Leonid Bugaev)","count":10,"tweets":[]}'
+      expect:
+        calls:
+          - step: build-twitter-command
+            exactly: 1
+          - step: twitter-request
+            exactly: 1
+        workflow_output:
+          - path: result.user
+            contains: "buger"
