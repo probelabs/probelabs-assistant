@@ -109,7 +109,13 @@
           6. Quickstart / templates -> `probe-quickstart`
              - Questions about getting started, project templates
 
-          7. Business / commercial questions -> MUST include `company-data`
+          7. Product specs / requirements -> MUST include `specs`
+             - Questions about product specifications, feature requirements
+             - Creating or refining specs, PRDs, design documents
+             - Reviewing existing specifications
+             - This contains documents (not code), may use `analyze_all`
+
+          8. Business / commercial questions -> MUST include `company-data`
              - Questions about customers, deals, proposals, pricing
              - Questions about product strategy, roadmap, ideas
              - Questions about market research, competitors
@@ -260,6 +266,17 @@
               - docs/ - knowledge files
               - workflows/ - engineer workflow
               Use when the assistant needs to update or extend itself.
+
+          - id: specs
+            repo: probelabs/specs
+            description: |
+              Product Specifications (NOT code):
+              - Product requirements documents (PRDs)
+              - Feature specifications and design documents
+              - Technical proposals and architecture decisions
+              - Specs are created and refined through pull requests
+              - Covers all ProbeLabs products (Probe, Visor, GoReplay, etc.)
+              Use `analyze_all` tool for comprehensive answers across specs.
 
           - id: company-data
             repo: probelabs/company-data
