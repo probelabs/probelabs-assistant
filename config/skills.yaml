@@ -353,3 +353,18 @@
   tools:
     schedule:
       tool: schedule
+
+# -----------------------------------------------------------------------------
+# Twitter/X - read tweets, search, bookmarks
+# -----------------------------------------------------------------------------
+- id: twitter
+  description: |
+    user wants to read a tweet, search Twitter/X, check bookmarks, look at someone's tweets,
+    or anything involving Twitter/X content. Includes: reading tweet URLs, searching for topics
+    on Twitter, checking mentions, monitoring social media, fetching user timelines.
+  knowledge: |
+    {% readfile "docs/twitter-tool.md" %}
+  tools:
+    twitter:
+      workflow: twitter
+      inputs: {}
