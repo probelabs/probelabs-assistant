@@ -138,7 +138,7 @@ def full_flow():
     state = secrets.token_urlsafe(16)
 
     auth_url = (
-        f'https://twitter.com/i/oauth2/authorize'
+        f'https://x.com/i/oauth2/authorize'
         f'?response_type=code'
         f'&client_id={urllib.parse.quote(client_id)}'
         f'&redirect_uri={urllib.parse.quote(redirect_uri)}'
