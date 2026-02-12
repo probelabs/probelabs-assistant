@@ -232,40 +232,52 @@ def cmd_search(args):
     print(json.dumps(result, indent=2, ensure_ascii=False))
 
 
+def get_oauth2_user_token():
+    """Get OAuth 2.0 user access token (required for bookmarks)."""
+    token = os.environ.get('TWITTER_OAUTH2_USER_TOKEN', '')
+    if not token:
+        print(json.dumps({
+            "error": "Bookmarks require OAuth 2.0 User Context. "
+                     "Set TWITTER_OAUTH2_USER_TOKEN in .env. "
+                     "Generate one at https://developer.twitter.com/en/portal/ "
+                     "using OAuth 2.0 Authorization Code with PKCE "
+                     "(scopes: tweet.read, users.read, bookmark.read)."
+        }))
+        sys.exit(1)
+    return token
+
+
 def cmd_bookmarks(args):
     max_results = 10
     for a in args:
         if a.startswith('--max_results='):
-            max_results = int(a.split('=')[1])
+            max_results = max(10, min(100, int(a.split('=')[1])))
 
-    consumer_key, consumer_secret, access_token, access_token_secret = get_oauth1_creds()
+    oauth2_token = get_oauth2_user_token()
 
     # First get authenticated user ID
     me_url = "https://api.twitter.com/2/users/me"
-    auth = oauth1_header('GET', me_url, {}, consumer_key, consumer_secret, access_token, access_token_secret)
-    me_data = api_get(me_url, {"Authorization": auth})
+    me_data = api_get(me_url, {"Authorization": f"Bearer {oauth2_token}"})
 
     if 'data' not in me_data:
-        print(json.dumps({"error": "Failed to get user info", "details": me_data}, indent=2))
+        print(json.dumps({"error": "Failed to get user info. Token may be expired.", "details": me_data}, indent=2))
         sys.exit(1)
 
     user_id = me_data['data']['id']
 
-    # Get bookmarks
-    base_url = f"https://api.twitter.com/2/users/{user_id}/bookmarks"
-    query_params = {
-        'tweet.fields': 'text,author_id,created_at,public_metrics,entities',
-        'expansions': 'author_id',
-        'user.fields': 'name,username',
-        'max_results': str(max_results),
-    }
+    # Get bookmarks (requires OAuth 2.0 User Context)
+    url = (
+        f"https://api.twitter.com/2/users/{user_id}/bookmarks"
+        f"?tweet.fields=text,author_id,created_at,public_metrics,entities"
+        f"&expansions=author_id"
+        f"&user.fields=name,username"
+        f"&max_results={max_results}"
+    )
 
-    full_url = base_url + '?' + urllib.parse.urlencode(query_params)
-    auth = oauth1_header('GET', base_url, query_params, consumer_key, consumer_secret, access_token, access_token_secret)
-    data = api_get(full_url, {"Authorization": auth})
+    data = api_get(url, {"Authorization": f"Bearer {oauth2_token}"})
 
-    if 'errors' in data and 'data' not in data:
-        print(json.dumps({"error": data['errors']}, indent=2))
+    if 'error' in data or ('errors' in data and 'data' not in data):
+        print(json.dumps({"error": data.get('error') or data.get('errors'), "status": data.get('status')}, indent=2))
         sys.exit(1)
 
     users_map = build_users_map(data.get('includes'))

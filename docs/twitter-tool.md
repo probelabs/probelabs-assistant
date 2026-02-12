@@ -17,7 +17,7 @@ Call the `twitter` tool with an `action` and `query`:
   - `query`: Twitter username (with or without `@`)
   - `max_results`: 10-100 (default 10)
 
-- **bookmarks**: Get the authenticated user's bookmarks. Requires OAuth 1.0a credentials (TWITTER_ACCESS_TOKEN and TWITTER_ACCESS_TOKEN_SECRET in .env).
+- **bookmarks**: Get the authenticated user's bookmarks. Requires an OAuth 2.0 user token (TWITTER_OAUTH2_USER_TOKEN in .env) obtained via Authorization Code with PKCE flow.
   - `max_results`: 10-100 (default 10)
 
 ### Guidelines
