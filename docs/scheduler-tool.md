@@ -1,31 +1,42 @@
 # Scheduler Tool
 
-The scheduler tool allows you to schedule workflow executions at specific times or recurring intervals.
+The scheduler tool allows you to schedule reminders and workflow executions at specific times or recurring intervals.
 
 ## Capabilities
 
-- **Create schedules**: Set up one-time or recurring workflow runs
+- **Create schedules**: Set up one-time or recurring reminders or workflow runs
 - **List schedules**: View your active schedules
 - **Cancel schedules**: Remove a scheduled task
 - **Pause/Resume**: Temporarily disable or re-enable a schedule
 
-## Usage Examples
+## Scheduling a Reminder
 
-### One-time schedules
-- "Remind me in 2 hours to check the PR"
-- "Schedule a status check for tomorrow at 9am"
-- "Run this again next Monday at 3pm"
+To schedule a simple text reminder, just describe what you want to be reminded of and when. Any request without a `%` prefix is treated as a text reminder.
 
-### Recurring schedules
-- "Run the status-check every weekday at 9am"
-- "Remind me every Monday at 10am about releases"
-- "Schedule a repo health check every Sunday at midnight"
+**Examples:**
+- "remind me to check the build status in 1 hour"
+- "remind me every morning at 9am to review open PRs"
+- "schedule a reminder for tomorrow at 3pm to deploy to production"
 
-### Managing schedules
-- "List my schedules"
-- "What schedules do I have?"
-- "Cancel schedule abc123"
-- "Pause schedule def456"
+## Scheduling a Workflow (Advanced)
+
+To schedule a specific workflow, you **MUST** prefix the workflow name with a `%` symbol. This tells the scheduler that you want to execute a named workflow instead of creating a simple text reminder.
+
+If you do not use the `%` prefix, your entire request will be treated as the text for a reminder.
+
+**Correct Usage:**
+- `schedule %daily-report every day at 8am` (Schedules the `daily-report` workflow)
+- `schedule %run-security-scan every Friday at 5pm` (Schedules the `run-security-scan` workflow)
+
+**Incorrect Usage (will create a text reminder instead of running a workflow):**
+- `schedule daily-report every day at 8am`
+
+## Managing Schedules
+
+- **To see your active schedules:** "list my schedules"
+- **To cancel a schedule:** "cancel schedule abc123"
+- **To pause a schedule:** "pause schedule abc123"
+- **To resume a schedule:** "resume schedule abc123"
 
 ## Context-Based Restrictions
 

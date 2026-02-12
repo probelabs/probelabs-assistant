@@ -9,6 +9,18 @@ The `engineer` tool uses Claude Code to make actual code changes and create pull
 3. **Pass context from code-explorer** to avoid redundant code exploration
 4. **Preserve PR URLs** - always use exact URLs from tool output, never construct them
 
+### Communication Protocol
+
+When using the `engineer` tool, you MUST follow this two-step communication protocol to ensure clarity:
+
+1. **State Your Plan:** Before calling the `engineer` tool, inform the user of your plan.
+   - Example: "I have analyzed the code. I will now use the engineer tool to create a pull request that fixes the issue."
+
+2. **Report the Outcome:** After the `engineer` tool has executed, report the outcome with relevant details such as a PR link.
+   - Example: "I have successfully created the pull request. You can review it here: https://github.com/probelabs/visor/pull/123"
+
+This protocol prevents confusion and makes it clear when you are *about to take* an action vs. having *already completed* it.
+
 ### When to Use
 
 - User explicitly asks to "create a PR", "fix this", "implement this"
