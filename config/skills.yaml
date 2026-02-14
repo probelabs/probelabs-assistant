@@ -44,6 +44,13 @@
 # -----------------------------------------------------------------------------
 - id: github
   description: request references GitHub PRs, issues, releases, branches, or needs to browse repository metadata for any ProbeLabs project
+  allowed_commands:
+    - "gh:issue:*"
+    - "gh:pr:*"
+    - "gh:release:*"
+    - "gh:repo:*"
+    - "gh:search:*"
+    - "gh:api:*"
   knowledge: |
     {% readfile "docs/github-tools.md" %}
 
@@ -52,6 +59,14 @@
 # -----------------------------------------------------------------------------
 - id: github-actions
   description: request involves debugging GitHub Actions workflows, CI/CD pipelines, or build failures
+  requires: [code-explorer]
+  allowed_commands:
+    - "gh:run:*"
+    - "gh:pr:*"
+    - "gh:workflow:*"
+    - "gh:api:*"
+    - "grep:*"
+    - "tail:*"
   knowledge: |
     {% readfile "docs/github-actions-debugging.md" %}
 
@@ -60,6 +75,9 @@
 # -----------------------------------------------------------------------------
 - id: find_external_contributions
   description: user wants to find public PRs or issues created by non-members of a GitHub organization, or asks about external/community contributions
+  allowed_commands:
+    - "gh:api:*"
+    - "gh:search:*"
   knowledge: |
     {% readfile "docs/find-external-contributions.md" %}
 
@@ -340,6 +358,10 @@
     or wants to investigate a specific bot interaction. Includes: "analyze trace",
     "debug trace", "why did the bot do X", "check trace ID", "what happened in trace",
     references to trace_id=, span_id=, or hex trace IDs like "a95d6300e2117df6..."
+  requires: [code-explorer]
+  allowed_commands:
+    - "curl:*"
+    - "jq:*"
   knowledge: |
     {% readfile "docs/assistant-debugging.md" %}
 
@@ -353,6 +375,29 @@
   tools:
     schedule:
       tool: schedule
+
+# -----------------------------------------------------------------------------
+# Web Search - internet search and content extraction via Tavily
+# -----------------------------------------------------------------------------
+- id: web-search
+  description: |
+    user needs current information from the internet, wants to search the web,
+    research a topic, look up documentation, find recent news, or needs up-to-date
+    data that the assistant doesn't have. Includes: web searches, checking current
+    status of services, finding documentation, researching competitors, looking up
+    recent events or announcements.
+  knowledge: |
+    {% readfile "docs/web-search-tool.md" %}
+  tools:
+    web-search:
+      command: npx
+      args: ["-y", "mcp-remote", "https://mcp.tavily.com/mcp/?tavilyApiKey=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"]
+      allowedMethods:
+        - tavily_search
+        - tavily_extract
+        - tavily_crawl
+        - tavily_map
+        - tavily_research
 
 # -----------------------------------------------------------------------------
 # Twitter/X - read tweets, search, bookmarks
