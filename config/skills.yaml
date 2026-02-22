@@ -377,29 +377,6 @@
       tool: schedule
 
 # -----------------------------------------------------------------------------
-# Web Search - internet search and content extraction via Tavily
-# -----------------------------------------------------------------------------
-- id: web-search
-  description: |
-    user needs current information from the internet, wants to search the web,
-    research a topic, look up documentation, find recent news, or needs up-to-date
-    data that the assistant doesn't have. Includes: web searches, checking current
-    status of services, finding documentation, researching competitors, looking up
-    recent events or announcements.
-  knowledge: |
-    {% readfile "docs/web-search-tool.md" %}
-  tools:
-    web-search:
-      command: npx
-      args: ["-y", "mcp-remote", "https://mcp.tavily.com/mcp/?tavilyApiKey=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"]
-      allowedMethods:
-        - tavily_search
-        - tavily_extract
-        - tavily_crawl
-        - tavily_map
-        - tavily_research
-
-# -----------------------------------------------------------------------------
 # Twitter/X - read tweets, search, bookmarks
 # -----------------------------------------------------------------------------
 - id: twitter
