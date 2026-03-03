@@ -15,9 +15,9 @@
 
 version: "1.0"
 
-# Import the high-level assistant workflow from visor-ee
+# Import the high-level assistant workflow (bundled in visor)
 imports:
-  - https://raw.githubusercontent.com/probelabs/visor-ee/master/workflows/assistant.yaml
+  - visor://assistant.yaml
   - workflows/engineer.yaml
   - workflows/twitter.yaml
 
