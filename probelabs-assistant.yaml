@@ -18,7 +18,6 @@ version: "1.0"
 # Import the high-level assistant workflow (bundled in visor)
 imports:
   - visor://assistant.yaml
-  - workflows/engineer.yaml
   - workflows/twitter.yaml
 
 workspace:

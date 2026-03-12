@@ -1,6 +1,7 @@
 ## Engineer Tool
 
-The `engineer` tool uses Claude Code to make actual code changes and create pull requests.
+The `engineer` tool implements code changes and creates pull requests across ProbeLabs repositories.
+It uses the built-in Visor engineer workflow with battle-tested prompts for reliable code changes.
 
 ### CRITICAL RULES
 
@@ -11,15 +12,23 @@ The `engineer` tool uses Claude Code to make actual code changes and create pull
 
 ### Communication Protocol
 
-When using the `engineer` tool, you MUST follow this two-step communication protocol to ensure clarity:
+When using the `engineer` tool, follow this two-step protocol:
 
-1. **State Your Plan:** Before calling the `engineer` tool, inform the user of your plan.
+1. **State Your Plan:** Before calling `engineer`, inform the user of your plan.
    - Example: "I have analyzed the code. I will now use the engineer tool to create a pull request that fixes the issue."
 
-2. **Report the Outcome:** After the `engineer` tool has executed, report the outcome with relevant details such as a PR link.
+2. **Report the Outcome:** After execution, report the result with PR links.
    - Example: "I have successfully created the pull request. You can review it here: https://github.com/probelabs/visor/pull/123"
 
-This protocol prevents confusion and makes it clear when you are *about to take* an action vs. having *already completed* it.
+### What It Does
+
+The engineer automatically:
+- Discovers the build system (Makefile, package.json, Cargo.toml, etc.)
+- Validates the implementation plan before writing code
+- Implements changes following existing code patterns
+- Runs build, tests, and lint before committing
+- Creates branches, commits, pushes, and opens PRs via `gh`
+- Reports structured output: `summary`, `pr_urls`, `files_changed`
 
 ### When to Use
 
@@ -31,13 +40,13 @@ This protocol prevents confusion and makes it clear when you are *about to take*
 
 1. First, call `code-explorer` with a detailed question about the relevant code
 2. Then call `engineer` with:
-   - `task`: Clear description of what to implement
+   - `task`: Clear, self-sufficient description of what to implement
    - `context`: The answer from code-explorer (so engineer doesn't re-explore)
-   - `projects`: List of project directory paths from code-explorer's `checkout_projects`
+   - `projects`: Passed automatically from code-explorer's checkout paths
 
 ### Multi-Repo Changes
 
 If changes span multiple ProbeLabs repos (e.g., changes in both `probe` and `visor`):
-- Include all relevant project paths
-- The engineer tool will handle multi-repo changes with sub-agents
-- All repos must have PRs created before the task is considered complete
+- The engineer delegates work to parallel sub-agents (one per repo)
+- All repos will have PRs created before the task is considered complete
+- Git operations (commit, push, PR) are always done by the main agent, not delegates
