@@ -5,6 +5,25 @@
 # Used by both code-explorer and engineer skills via:
 #   expression: "loadConfig('config/projects.yaml')"
 #
+# This file feeds into the built-in code-talk and engineer workflows.
+# All top-level keys become workflow inputs. Available fields:
+#
+# Shared (both code-talk & engineer):
+#   architecture     - project topology and routing rules
+#   docs_repo        - documentation repository (owner/name)
+#   docs_ref         - git ref for docs repo (default: main)
+#   max_projects     - max projects to checkout (default: 3)
+#   routing_prompt   - additional AI routing instructions
+#   projects         - array of project definitions (id, repo, description,
+#                      sandbox, services, setup, knowledge)
+#
+# Code-talk only:
+#   exploration_prompt - additional instructions for the exploration AI
+#
+# Engineer only:
+#   engineer_prompt    - additional instructions for the engineering AI
+#                        (coding conventions, PR rules, tool preferences)
+#
 # =============================================================================
 
 architecture: |
@@ -69,6 +88,16 @@ exploration_prompt: |
   - Probe: semantic code search (Rust, tree-sitter, ripgrep)
   - Visor: code review automation (TypeScript, GitHub API)
   - Various AI developer tools (MCP servers, CLIs)
+
+engineer_prompt: |
+  ProbeLabs engineering conventions:
+  - TypeScript projects: use npm (not yarn/pnpm), follow existing ESLint config
+  - Rust projects (Probe): use cargo fmt and cargo clippy before committing
+  - Go projects (GoReplay): use gofmt and go vet
+  - Branch naming: feat/<short-description>, fix/<short-description>
+  - Commit messages: conventional commits (feat:, fix:, docs:, chore:)
+  - Always check for existing tests and add/update tests for changes
+  - PR descriptions must include a "## Test plan" section
 
 projects:
   - id: probe
