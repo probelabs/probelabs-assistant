@@ -109,6 +109,11 @@ projects:
       - ElasticSearch-style query syntax
       - MCP server integration
       - Used as foundation for code-talk workflows
+    setup:
+      - cargo build
+    knowledge: |
+      Rust project using cargo. Tests: cargo test.
+      Lint: cargo clippy. Format: cargo fmt.
 
   - id: visor
     repo: probelabs/visor
@@ -119,6 +124,13 @@ projects:
       - Security, performance, style analysis
       - Multi-model AI support (Claude, GPT)
       - PR comment and suggestion generation
+    setup:
+      - npm install
+      - npm run build
+    knowledge: |
+      TypeScript project using ncc bundler. Build: npm run build.
+      Tests: npm test (Jest + YAML tests). Lint: npm run lint.
+      Binary: dist/index.js. YAML tests: npm run test:yaml.
 
   - id: visor-ee
     repo: probelabs/visor-ee
@@ -130,6 +142,9 @@ projects:
       - MCP server orchestration
       - Code-talk and engineer workflow primitives
       - Liquid templating for dynamic prompts
+    setup:
+      - npm install
+      - npm run build
 
   - id: probelabs-com
     repo: probelabs/probelabs.com
@@ -163,6 +178,11 @@ projects:
       - Load testing with real production data
       - Traffic mirroring and filtering
       - Plugin system for request modification
+    setup:
+      - go mod download
+    knowledge: |
+      Go project. Build: go build ./cmd/gor/. Tests: go test ./...
+      Lint: gofmt -l . && go vet ./...
 
   - id: logoscope
     repo: probelabs/logoscope
@@ -172,6 +192,8 @@ projects:
       - Anomaly detection in log streams
       - Streaming support
       - npm wrapper and MCP server
+    setup:
+      - npm install
 
   - id: docs-mcp
     repo: probelabs/docs-mcp
